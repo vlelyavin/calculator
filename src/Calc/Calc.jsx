@@ -1,92 +1,103 @@
 import { useEffect, useRef } from "react";
-
+import { addHistoryItem, setOutputExpression } from "../actions/actions";
 import "./Calc.css";
 
-export const Calc = ({ state, setState, setHistory }) => {
+export const Calc = ({ state, dispatch }) => {
+  const outputExpression = state.outputExpression;
   const regex = /[-/*+]/; // checks if a string contains math signs
-  const calcNumber = useRef();
-  let lastStateSymbol = state[state.length - 2];
+  const output = useRef();
   const space = " ";
+  let outputLastSymbol = outputExpression[outputExpression.length - 2];
 
   const clearAll = () => {
-    setState("0");
+    dispatch(setOutputExpression("0"));
   };
 
   const plusMinus = () => {
-    if (state === "0") return;
-    const matches = state.match(/[+-]?([1-9]\d*(\.\d*[1-9])?|0\.\d*[1-9]+)|\d+(\.\d*[1-9])?/g); // matches all positive and negative numbers
+    if (outputExpression === "0") return;
+    const matches = outputExpression.match(/[+-]?([1-9]\d*(\.\d*[1-9])?|0\.\d*[1-9]+)|\d+(\.\d*[1-9])?/g); // matches all positive and negative numbers
     if ((matches[0] > 0 && matches.length === 1) || (matches[0] < 0 && matches.length === 1)) {
-      setState((matches[0] * -1).toString());
+      dispatch(setOutputExpression((matches[0] * -1).toString()));
     } else {
-      setState(state.slice(0, matches[0].length + 2) + space + (matches[1] * -1).toString());
+      dispatch(
+        setOutputExpression(outputExpression.slice(0, matches[0].length + 2) + space + (matches[1] * -1).toString())
+      );
     }
   };
 
   const evaluate = () => {
-    const splittedState = state.split(regex);
-    if (regex.test(lastStateSymbol) && state.length > 1) {
-      setState(eval(state + splittedState[0]).toString());
+    const splittedState = outputExpression.split(regex);
+    if (regex.test(outputLastSymbol) && outputExpression.length > 1) {
+      dispatch(setOutputExpression(eval(outputExpression + splittedState[0]).toString()));
+      dispatch(
+        addHistoryItem([
+          outputExpression + splittedState[0] + " = ",
+          eval(outputExpression + splittedState[0]).toString(),
+        ])
+      );
     } else {
-      setState(eval(state).toString());
+      dispatch(setOutputExpression(eval(outputExpression).toString()));
+      dispatch(addHistoryItem([outputExpression + " = ", outputExpression]));
     }
-    setHistory((prev) => [...prev, [state + " = ", eval(state).toString()]]);
   };
 
   const setSign = (e) => {
-    if (state.length === 2 && lastStateSymbol === "-") lastStateSymbol = state[state.length - 1];
+    if (outputExpression.length === 2 && outputLastSymbol === "-") {
+      outputLastSymbol = outputExpression[outputExpression.length - 1];
+    }
     const sign = e.target.textContent;
-    if (regex.test(lastStateSymbol)) {
-      setState(state.replace(lastStateSymbol, sign));
-    } else if (state.match(regex)) {
-      setHistory((prev) => [...prev, [state + " = ", eval(state).toString()]]);
-      setState(eval(state) + space + sign + space);
+    if (regex.test(outputLastSymbol)) {
+      dispatch(setOutputExpression(outputExpression.replace(outputLastSymbol, sign)));
+    } else if (outputExpression.match(regex)) {
+      dispatch(addHistoryItem([outputExpression + " = ", eval(outputExpression).toString()]));
+      dispatch(setOutputExpression(eval(outputExpression) + space + sign + space));
     } else {
-      setState(state + space + sign + space);
+      dispatch(setOutputExpression(outputExpression + space + sign + space));
     }
   };
 
   const dot = () => {
-    const splittedState = state.split(regex);
+    const splittedState = outputExpression.split(regex);
     if (splittedState.length > 1) {
       if (!splittedState[1].includes(".")) {
-        setState(state + ".");
+        dispatch(setOutputExpression(outputExpression + "."));
       }
     } else {
-      if (!state.includes(".")) {
-        setState(state + ".");
+      if (!outputExpression.includes(".")) {
+        dispatch(setOutputExpression(outputExpression + "."));
       }
     }
   };
 
   const eraseLast = () => {
-    if (state.length === 1) {
+    if (outputExpression.length === 1) {
       clearAll();
-    } else if (state[state.length - 1] === space) {
-      setState(state.slice(0, -2));
+    } else if (outputExpression[outputExpression.length - 1] === space) {
+      dispatch(setOutputExpression(outputExpression.slice(0, -2)));
     } else {
-      setState(state.slice(0, -1));
+      dispatch(setOutputExpression(outputExpression.slice(0, -1)));
     }
   };
 
   const handleClick = (e) => {
-    if (state === "0" && e.target.textContent === 0) {
+    if (outputExpression === "0" && e.target.textContent === 0) {
       clearAll();
-    } else if (state === "0") {
-      setState("" + e.target.textContent);
+    } else if (outputExpression === "0") {
+      dispatch(setOutputExpression("" + e.target.textContent));
     } else {
-      setState(state + e.target.textContent);
+      dispatch(setOutputExpression(outputExpression + e.target.textContent));
     }
   };
 
   useEffect(() => {
-    calcNumber.current.textContent = state;
-  }, [state]);
+    output.current.textContent = outputExpression;
+  }, [outputExpression]);
 
   return (
     <div className="calc">
       <div className="header">Calculator</div>
       <div className="calc__screen">
-        <p className="calc__screen__number" ref={calcNumber}>
+        <p className="calc__screen__number" ref={output}>
           0
         </p>
       </div>

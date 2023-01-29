@@ -1,17 +1,16 @@
-import { useState } from "react";
+import { useReducer } from "react";
+import { INITIAL_STATE, mainReducer } from "./reducers/mainReducer";
 import { Calc } from "./Calc";
 import { History } from "./History";
 import "./main.css";
 
 export const App = () => {
-  const [state, setState] = useState("0");
-
-  const [history, setHistory] = useState([]);
+  const [state, dispatch] = useReducer(mainReducer, INITIAL_STATE);
 
   return (
     <>
-      <Calc setHistory={setHistory} state={state} setState={setState} />
-      <History history={history} setState={setState} setHistory={setHistory} />
+      <Calc state={state} dispatch={dispatch} />
+      <History state={state} dispatch={dispatch} />
     </>
   );
 };

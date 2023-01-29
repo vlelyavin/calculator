@@ -1,8 +1,8 @@
-import { useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
+import { addHistoryItem, setOutputExpression } from "../actions/actions";
 import "./History.css";
 
-export const History = ({ history, setState, setHistory }) => {
+export const History = ({ state, dispatch }) => {
   // const url = "localhost:8080/math/expamples";
   const arr = ["2+2", "44/2", "35*8", "40+1"];
 
@@ -13,7 +13,7 @@ export const History = ({ history, setState, setHistory }) => {
     //   setHistory((prev) => [...prev, [item + "=", eval(item).toString()]]);
     // });
     arr.forEach((item) => {
-      setHistory((prev) => [...prev, [item + "=", eval(item).toString()]]);
+      dispatch(addHistoryItem([item + "=", eval(item).toString()]));
     });
   };
 
@@ -21,8 +21,8 @@ export const History = ({ history, setState, setHistory }) => {
     <div className="history">
       <div className="header">History</div>
       <div className="history__container">
-        {history.map((item) => (
-          <div className="history__item" key={uuidv4()} onClick={() => setState(item[1])}>
+        {state.history.map((item) => (
+          <div className="history__item" key={uuidv4()} onClick={() => dispatch(setOutputExpression(item[1]))}>
             <div className="history__item__expression">{item[0]}</div>
             <div className="history__item__result">{item[1]}</div>
           </div>
