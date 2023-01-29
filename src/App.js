@@ -1,25 +1,17 @@
-import logo from './logo.svg';
-import './App.css';
+import { useState } from "react";
+import { Calc } from "./Calc";
+import { History } from "./History";
+import "./main.css";
 
-function App() {
+export const App = () => {
+  const [state, setState] = useState("0");
+
+  const [history, setHistory] = useState([]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <Calc setHistory={setHistory} state={state} setState={setState} />
+      <History history={history} setState={setState} setHistory={setHistory} />
+    </>
   );
-}
-
-export default App;
+};
